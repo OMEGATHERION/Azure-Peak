@@ -32,7 +32,7 @@
 		return FALSE
 	if(H.underwear)
 		return FALSE
-	if(!get_location_accessible(H, BODY_ZONE_PRECISE_GROIN))
+	if(!get_location_accessible(H, BODY_ZONE_PRECISE_GROIN, check_cosmetics = TRUE))
 		return FALSE
 	if(isgnoll(H))
 		return FALSE
@@ -90,7 +90,7 @@
 		return FALSE
 	if(H.underwear)
 		return FALSE
-	if(!get_location_accessible(H, BODY_ZONE_PRECISE_GROIN))
+	if(!get_location_accessible(H, BODY_ZONE_PRECISE_GROIN, check_cosmetics = TRUE))
 		return FALSE
 	var/obj/item/organ/penis/penis = H.getorganslot(ORGAN_SLOT_PENIS)
 	if(penis && penis.sheath_type == SHEATH_TYPE_SLIT) //If our penis hides in a slit, dont describe testicles
@@ -127,7 +127,7 @@
 		return FALSE
 	if(H.underwear)
 		return FALSE
-	if(!get_location_accessible(H, BODY_ZONE_PRECISE_GROIN))
+	if(!get_location_accessible(H, BODY_ZONE_PRECISE_GROIN, check_cosmetics = TRUE))
 		return FALSE
 	if(isgnoll(H))
 		return FALSE
@@ -177,7 +177,7 @@
 		return FALSE
 	if(H.underwear && H.underwear.covers_breasts)
 		return FALSE
-	if(!get_location_accessible(H, BODY_ZONE_CHEST))
+	if(!get_location_accessible(H, BODY_ZONE_CHEST, check_cosmetics = TRUE))
 		return FALSE
 	if(isgnoll(H))
 		return FALSE

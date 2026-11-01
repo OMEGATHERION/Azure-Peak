@@ -211,6 +211,7 @@
 
 		if(check_shields(P, P.damage, "the [P.name]", PROJECTILE_ATTACK, P.armor_penetration))
 			P.on_hit(src, 100, def_zone)
+			P.handle_drop()
 			return BULLET_ACT_HIT
 
 	return ..(P, def_zone)
@@ -633,12 +634,6 @@
 		return
 
 	if(src == M)
-		if(has_status_effect(STATUS_EFFECT_CHOKINGSTRAND))
-			to_chat(src, span_notice("I attempt to remove the durathread strand from around my neck."))
-			if(do_after(src, 35, null, src))
-				to_chat(src, span_notice("I succesfuly remove the durathread strand."))
-				remove_status_effect(STATUS_EFFECT_CHOKINGSTRAND)
-			return
 		check_for_injuries(M)
 		return
 
