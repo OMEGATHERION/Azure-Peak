@@ -34,7 +34,9 @@
 	cmode_music = 'sound/music/combat_graggar.ogg'
 
 /datum/outfit/job/roguetown/gnoll/shaman
-	vamp_armor_type = /obj/item/clothing/suit/roguetown/armor/vampiric/gnoll/shaman
+	vamp_armor_skin = /obj/item/clothing/suit/roguetown/armor/vampiric/gnoll/shaman
+	vamp_armor_chest = /obj/item/clothing/suit/roguetown/armor/vampiric/gnoll/chest/shaman
+	vamp_armor_limb = /obj/item/clothing/suit/roguetown/armor/vampiric/gnoll/extremities/shaman
 	max_fury_stacks = 79
 	shard_threshold = 44
 	shard_repair_value = 20
@@ -42,7 +44,9 @@
 /datum/outfit/job/roguetown/gnoll/shaman/pre_equip(mob/living/carbon/human/H)
 	if(H.mind)
 		H.set_species(/datum/species/gnoll)
-		H.skin_armor = new vamp_armor_type(H)
+		H.skin_armor = new vamp_armor_skin(H)
+		H.wear_shirt = new vamp_armor_limb(H)
+		H.wear_armor = new vamp_armor_chest(H)
 		H.AddComponent(/datum/component/vampiric_striker, shard_threshold, shard_repair_value, max_fury_stacks)
 		var/obj/item/ritechalk/chalk = new /obj/item/ritechalk(H.loc)
 		H.put_in_r_hand(chalk)
