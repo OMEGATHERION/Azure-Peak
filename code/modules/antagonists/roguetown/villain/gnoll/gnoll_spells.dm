@@ -487,19 +487,23 @@
 	H.energy_add(heal_amt * 4)
 
 /datum/action/cooldown/spell/gnoll/consume/proc/restore_armor_integrity(mob/living/carbon/human/H, percent)
-	if(!H)
+	/*if(!H)
 		return
 
-	if(!H.skin_armor)
-		return
+	if(H.wear_shirt && H.wear_armor)
+		return*/
 
-	var/obj/item/clothing/suit/roguetown/armor/skin_armor = H.skin_armor
-	if(!istype(skin_armor))
-		return
+	var/obj/item/clothing/suit/roguetown/armor/vampiric/gnoll/chest = H.wear_armor
+	var/heal_chest_amount = round(chest.max_integrity * (percent / 100))
+	var/obj/item/clothing/suit/roguetown/armor/vampiric/gnoll/extremities = H.wear_shirt
+	var/heal_limb_amount = round(extremities.max_integrity * (percent / 100))
 
-	var/heal_amount = round(skin_armor.max_integrity * (percent / 100))
+	chest.obj_integrity = min(chest.obj_integrity + heal_chest_amount, chest.max_integrity)
 
-	skin_armor.obj_integrity = min(skin_armor.obj_integrity + heal_amount, skin_armor.max_integrity)
+	if(chest.obj_broken && chest.obj_integrity > 0)
+		chest.obj_fix(null, FALSE)
 
-	if(skin_armor.obj_broken && skin_armor.obj_integrity > 0)
-		skin_armor.obj_fix(null, FALSE)
+	extremities.obj_integrity = min(extremities.obj_integrity + heal_limb_amount, extremities.max_integrity)
+
+	if(extremities.obj_broken && extremities.obj_integrity > 0)
+		extremities.obj_fix(null, FALSE)
