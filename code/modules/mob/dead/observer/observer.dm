@@ -44,6 +44,8 @@ GLOBAL_VAR_CONST(observer_move_delay_multiplier, 0.5)
 	var/datum/orbit_menu/orbit_menu
 	var/orbiting_ref
 	var/ghostize_time = 0
+	// We want ghost letter to keep the same name
+	var/pen_name
 	move_resist = INFINITY
 
 /mob/dead/observer/admin
@@ -177,6 +179,9 @@ GLOBAL_VAR_CONST(observer_move_delay_multiplier, 0.5)
 				name = random_unique_name(gender)
 
 		mind = body.mind	//we don't transfer the mind but we keep a reference to it.
+		if(ishuman(body))
+			var/mob/living/carbon/human/H = body
+			pen_name = H.pen_name
 
 		set_suicide(body.suiciding) // Transfer whether they committed suicide.
 
@@ -266,6 +271,7 @@ Works together with spawning an observer, noted above.
 		SSdroning.kill_loop(client)
 		SSdroning.kill_droning(client)
 	var/mob/dead/observer/ghost = new ghostpath(src)
+	ghost.flags_1 |= flags_1 & ANTAGOOC_ACCESS_1
 	ghost.ghostize_time = world.time
 	SStgui.on_transfer(src, ghost)
 	ghost.can_reenter_corpse = reenter
@@ -1187,6 +1193,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 		list("type" = /datum/antagonist/dreamwalker, "group" = "major", "priority" = 61),
 		list("type" = /datum/antagonist/unbound_death_knight, "group" = "major", "priority" = 62),
 		list("type" = /datum/antagonist/zizo_knight, "group" = "major", "priority" = 63),
+		list("type" = /datum/antagonist/renegade, "group" = "major", "priority" = 64),
 		list("type" = /datum/antagonist/prebel/head, "group" = "minor", "priority" = 70),
 		list("type" = /datum/antagonist/prebel, "group" = "minor", "priority" = 71),
 		list("type" = /datum/antagonist/aspirant, "group" = "minor", "priority" = 72),
