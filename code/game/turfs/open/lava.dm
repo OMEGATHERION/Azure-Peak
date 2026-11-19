@@ -7,7 +7,7 @@
 	icon = 'icons/turf/roguefloor.dmi'
 	gender = PLURAL //"That's some lava."
 	baseturfs = /turf/open/lava //lava all the way down
-	slowdown = 2
+	slowdown = 7
 
 	light_outer_range =	4
 	light_power = 0.75
@@ -96,6 +96,8 @@
 		return TRUE
 	else if (isliving(thing))
 		var/mob/living/L = thing
+		if(isgnoll(L))
+			return FALSE
 		if(L.movement_type & FLYING)
 			return FALSE //YOU'RE FLYING OVER IT
 		if("lava" in L.weather_immunities) // just flat-out immune. is this even used in RT?
@@ -150,11 +152,13 @@
 				continue
 
 			if(L)
-				var/def_zone_random = pick(BODY_ZONE_CHEST, BODY_ZONE_HEAD, BODY_ZONE_L_ARM, BODY_ZONE_L_LEG, BODY_ZONE_R_ARM, BODY_ZONE_R_LEG)
-				L.adjustFireLoss(30)
-				L.adjustOxyLoss(30)
-				L.fire_act(99, 99)
-				arcyne_strike(L, L, null, 70, def_zone_random, BCLASS_BURN, PEN_BSTEEL, "acid", TRUE, FALSE, FALSE, BURN, 0, 0, 10)
+				L.fire_act(20, 100)
+				if(L.mobility_flags & MOBILITY_STAND)
+					/*arcyne_strike(L, L, null, 70, pick(BODY_ZONE_L_LEG, BODY_ZONE_R_LEG), BCLASS_BURN, PEN_BSTEEL, "acid", TRUE, FALSE, FALSE, BURN, 0, 0, 10)*/
+					L.apply_damage(70, BURN, pick(BODY_ZONE_L_LEG, BODY_ZONE_R_LEG))
+				else
+					/*arcyne_strike(L, L, null, 70, pick(BODY_ZONE_CHEST, BODY_ZONE_HEAD, BODY_ZONE_L_ARM, BODY_ZONE_L_LEG, BODY_ZONE_R_ARM, BODY_ZONE_R_LEG), BCLASS_BURN, PEN_BSTEEL, "acid", TRUE, FALSE, FALSE, BURN, 0, 0, 10)*/
+					L.apply_damage(70, BURN, pick(BODY_ZONE_CHEST, BODY_ZONE_HEAD, BODY_ZONE_L_ARM, BODY_ZONE_L_LEG, BODY_ZONE_R_ARM, BODY_ZONE_R_LEG))
 				to_chat(L, span_userdanger("THE LAVA BURNS!"))
 				if(prob(50))
 					L.emote("superagony")

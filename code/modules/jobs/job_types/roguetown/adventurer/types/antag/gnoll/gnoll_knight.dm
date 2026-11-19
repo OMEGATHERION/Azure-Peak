@@ -5,7 +5,7 @@
 
 	outfit = /datum/outfit/job/roguetown/gnoll/knight
 	category_tags = list(CTAG_GNOLL)
-	traits_applied = list(TRAIT_HEAVYARMOR, TRAIT_UNCONVERTIBLE, TRAIT_NOFIRE_STACK) // Flavoring
+	traits_applied = list(TRAIT_HEAVYARMOR, TRAIT_UNCONVERTIBLE, TRAIT_FIRE_RESIST) // Flavoring
 
 	reset_stats = TRUE
 	subclass_stats = list(
