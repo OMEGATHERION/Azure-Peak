@@ -49,20 +49,36 @@
 /datum/intent/simple/werewolf/gnoll
 
 /obj/item/rogueweapon/werewolf_claw/gnoll
-	name = "Gnoll Claw"
+	name = "gnoll claw"
+	desc = "I dig the soil and it's all right there. I raise them to the moon and it's all right there. I put them in a body and it's all right there..."
 	// We are smarter, we can use our solid, steel-like claws to defend ourselves.
 	wdefense = 6
 	force = 27
+	wlength = WLENGTH_SHORT
 	possible_item_intents = list(/datum/intent/simple/gnoll_cut, /datum/intent/simple/werewolf/gnoll, /datum/intent/mace/smash/werewolf/gnoll, /datum/intent/mace/strike/gnoll)
 	special = /datum/special_intent/shin_swipe
 
 /obj/item/rogueweapon/werewolf_claw/gnoll/right
 	icon_state = "claw_r"
-	wlength = WLENGTH_SHORT
 
 /obj/item/rogueweapon/werewolf_claw/gnoll/left
 	icon_state = "claw_l"
-	wlength = WLENGTH_SHORT
+
+/obj/item/rogueweapon/werewolf_claw/gnoll/edifice
+	name = "edificine claw"
+	desc = "They only feel right wrist-deep in stone."
+
+	force = 21
+	possible_item_intents = list(/datum/intent/pick)
+	special = null
+	is_tool = TRUE
+	associated_skill = /datum/skill/labor/mining
+
+/obj/item/rogueweapon/werewolf_claw/gnoll/edifice/right
+	icon_state = "claw_r"
+
+/obj/item/rogueweapon/werewolf_claw/gnoll/edifice/left
+	icon_state = "claw_l"
 
 /datum/intent/simple/werewolf/gnoll
 	name = "claw"

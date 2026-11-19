@@ -6,6 +6,11 @@
 	name = "Gnoll Claws"
 	claw_type = /obj/item/rogueweapon/werewolf_claw/gnoll
 
+/obj/effect/proc_holder/spell/self/claws/gnoll/edifice
+	name = "Hands of the Edifice"
+	desc = "Your claws can adapt to pierce stone."
+	claw_type = /obj/item/rogueweapon/werewolf_claw/gnoll/edifice
+
 /obj/effect/proc_holder/spell/self/howl/gnoll
 	howl_sounds = list('sound/vo/mobs/gnoll/yeen_howl.ogg')
 	howl_sounds_far = list('sound/vo/mobs/hyena/gnoll_distant.ogg')
