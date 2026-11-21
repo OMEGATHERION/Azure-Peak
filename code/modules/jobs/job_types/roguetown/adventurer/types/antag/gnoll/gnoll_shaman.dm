@@ -42,6 +42,7 @@
 /datum/outfit/job/roguetown/gnoll/shaman/pre_equip(mob/living/carbon/human/H)
 	if(H.mind)
 		H.set_species(/datum/species/gnoll)
+		H.AddSpell(new /obj/effect/proc_holder/spell/self/claws/gnoll)
 		H.skin_armor = new vamp_armor_type(H)
 		H.AddComponent(/datum/component/vampiric_striker, shard_threshold, shard_repair_value, max_fury_stacks)
 		neck = /obj/item/storage/belt/rogue/pouch/healing

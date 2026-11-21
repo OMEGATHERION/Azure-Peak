@@ -39,6 +39,7 @@
 		H.mind.add_antag_datum(new_antag)
 		add_verb(H, /mob/living/carbon/human/proc/gnoll_inspect_skin)
 	H.set_species(/datum/species/gnoll)
+	H.AddSpell(new /obj/effect/proc_holder/spell/self/claws/gnoll)
 	H.skin_armor = new vamp_armor_type(H)
 	H.AddComponent(/datum/component/vampiric_striker, shard_threshold, shard_repair_value, max_fury_stacks)
 	don_pelt(H)

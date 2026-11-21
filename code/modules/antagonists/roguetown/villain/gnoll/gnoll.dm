@@ -61,12 +61,10 @@
 /obj/item/rogueweapon/werewolf_claw/gnoll/edifice
 	name = "edificine claw"
 	desc = "They only feel right wrist-deep in stone."
-
-	force = 21
-	possible_item_intents = list(/datum/intent/pick)
+	possible_item_intents = list(/datum/intent/pick, /datum/intent/simple/werewolf/gnoll, /datum/intent/mace/smash/werewolf/gnoll, /datum/intent/mace/strike/gnoll)
 	special = null
 	is_tool = TRUE
-	associated_skill = /datum/skill/labor/mining
+	secondary_skills = /datum/skill/labor/mining
 
 /obj/item/rogueweapon/werewolf_claw/gnoll/edifice/right
 	icon_state = "claw_r"
