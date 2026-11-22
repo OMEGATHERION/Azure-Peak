@@ -44,7 +44,7 @@
 
 /obj/item/rogueweapon/werewolf_claw/gnoll
 	name = "gnoll claw"
-	desc = "I dig the soil and it's all right there. I raise them to the moon and it's all right there. I put them in a body and it's all right there..."
+	desc = "I scratch the soil and it's all right there. I raise them to the moon and it's all right there. I put them in a body and it's all right there..."
 	// We are smarter, we can use our solid, steel-like claws to defend ourselves.
 	wdefense = 6
 	force = 27
