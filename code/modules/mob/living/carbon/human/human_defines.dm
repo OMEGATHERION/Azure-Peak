@@ -42,6 +42,8 @@
 	var/voice_color = "#a0a0a0"
 	var/nickname = "Please Change Me"
 	var/highlight_color = "#FF0000"
+	var/political_faction = POLITICAL_FACTION_NEUTRAL
+	var/noble_rank = NOBLE_RANK_NONE
 	var/detail_color = "000"
 
 	/// This is your skin tone, uses words such as 'caucasian1', but also accepts hexcode strings (without #).
@@ -168,6 +170,9 @@
 
 	var/voice_type = null // LETHALSTONE EDIT: defines what sound pack we use. keep this null so mobs resort to their typical gender typing - preferences set this
 	var/datum/statpack/statpack = null // Lethalstone Port - statpacks for greater customization
+	var/list/statpack_rolls
+	var/list/virtue_records
+	var/list/applied_quirks
 	//setting up vars for vampire color values
 	var/vampire_skin = null
 	var/vampire_eyes = null
@@ -241,3 +246,9 @@
 
 	/// Guarded Virtue (TRAIT_DECEIVING_MEEKNESS) exclusive variable for filtering out our descriptors from examine.
 	var/show_descriptors = TRUE
+
+	/// Our last used key. Updates whenever we lock / unlock doors.
+	var/last_used_keyhash
+
+	/// world.time snapshot until when our last_used_keyhash can be imprinted in wax putty without any alarm.
+	var/key_imprint_valid_until

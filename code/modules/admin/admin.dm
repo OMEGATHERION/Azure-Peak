@@ -25,7 +25,7 @@
 		to_chat(usr, "<span class='warning'>I seem to be selecting a mob that doesn't exist anymore.</span>")
 		return
 
-	var/body = "<html><head><title>Options for [M.key]</title><style>"
+	var/body = "<html><head><meta charset='UTF-8'><title>Options for [M.key]</title><style>"
 	body += "<style>"
 	body += "html, body { height: 100%; margin: 0; padding: 0; overflow-x: hidden; }"
 	body += "#container { display: flex; flex-direction: row; align-items: flex-start; width: 100%; overflow-x: hidden; flex-wrap: nowrap; }"
@@ -173,6 +173,7 @@
 	//body += "<A href='?_src_=holder;[HrefToken()];languagemenu=[REF(M)]'>Language Menu</A>"
 	body += "<br><A href='?_src_=holder;[HrefToken()];heal_panel=[REF(M)]'>Heal Panel</A> | "
 	body += "<A href='?_src_=holder;[HrefToken()];inventory_panel=[REF(M)]'>Inventory Panel</A> | "
+	body += "<A href='?_src_=holder;[HrefToken()];character_panel=[REF(M)]'>Character Panel</A> | "
 	body += "<A href='?_src_=holder;[HrefToken()];examine_player=[REF(M)]'>Flavor Text</A> | "
 	body += "<A href='?_src_=holder;[HrefToken()];secrets_panel=[REF(M)]'>Secrets</A>"
 
@@ -426,6 +427,11 @@
 //i.e. buttons/verbs
 
 
+#define REBOOT_REGULAR "Regular Restart"
+#define REBOOT_HARD "Hard Restart (No Delay/Feedback Reason)"
+#define REBOOT_HARDEST "Hardest Restart (No actions, just reboot)"
+#define REBOOT_SERVER "Server Restart (Kill and restart DD)"
+
 /datum/admins/proc/restart()
 	set category = "Server"
 	set name = "Reboot World"
@@ -433,9 +439,9 @@
 	if (!usr.client.holder)
 		return
 
-	var/list/options = list("Regular Restart", "Hard Restart (No Delay/Feeback Reason)", "Hardest Restart (No actions, just reboot)")
+	var/list/options = list(REBOOT_REGULAR, REBOOT_HARD, REBOOT_HARDEST)
 	if(world.TgsAvailable())
-		options += "Server Restart (Kill and restart DD)";
+		options += REBOOT_SERVER
 
 	var/rebootconfirm
 	if(SSticker.admin_delay_notice)
@@ -446,20 +452,26 @@
 	if(rebootconfirm)
 		var/result = input(usr, "Select reboot method", "World Reboot", options[1]) as null|anything in options
 		if(result)
+			log_admin("[key_name(usr)] rebooted the world: [result]")
 			SSblackbox.record_feedback("tally", "admin_verb", 1, "Reboot World") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 			var/init_by = "Initiated by Admin."
 			switch(result)
-				if("Regular Restart")
+				if(REBOOT_REGULAR)
 					SSticker.Reboot(init_by, "admin reboot - by Admin", 10)
-				if("Hard Restart (No Delay, No Feeback Reason)")
+				if(REBOOT_HARD)
 					to_world("World reboot - [init_by]")
 					world.Reboot()
-				if("Hardest Restart (No actions, just reboot)")
+				if(REBOOT_HARDEST)
 					to_world("Hard world reboot - [init_by]")
 					world.Reboot(fast_track = TRUE)
-				if("Server Restart (Kill and restart DD)")
+				if(REBOOT_SERVER)
 					to_world("Server restart - [init_by]")
 					world.TgsEndProcess()
+
+#undef REBOOT_REGULAR
+#undef REBOOT_HARD
+#undef REBOOT_HARDEST
+#undef REBOOT_SERVER
 
 /datum/admins/proc/end_round()
 	set category = "Server"
@@ -473,6 +485,7 @@
 		return
 	if(confirm == "Yes")
 		SSticker.force_ending = 1
+		log_admin("[key_name(usr)] ended the round.")
 		SSblackbox.record_feedback("tally", "admin_verb", 1, "End Round") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
 
@@ -575,6 +588,30 @@
 	log_admin("[key_name(usr)] toggled OOC.")
 	message_admins("[key_name_admin(usr)] toggled Dead OOC.")
 	SSblackbox.record_feedback("nested tally", "admin_toggle", 1, list("Toggle Dead OOC", "[GLOB.dooc_allowed ? "Enabled" : "Disabled"]")) //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
+
+/datum/admins/proc/toggleantagooc()
+	set category = "Server"
+	set desc = "Toggle the AntagOOC channel"
+	set name = "Toggle AntagOOC"
+	GLOB.antagooc_allowed = !GLOB.antagooc_allowed
+	for(var/client/C in GLOB.clients)
+		if(C.mob?.has_antagooc_access())
+			to_chat(C, "<B>AntagOOC has been [GLOB.antagooc_allowed ? "enabled. If you're an antagonist, you can access it through the \"AntagOOC\" verb" : "disabled"].</B>")
+	log_admin("[key_name(usr)] toggled AntagOOC.")
+	message_admins("[key_name_admin(usr)] toggled AntagOOC [GLOB.antagooc_allowed ? "on" : "off"].")
+	SSblackbox.record_feedback("nested tally", "admin_toggle", 1, list("Toggle AntagOOC", "[GLOB.antagooc_allowed ? "Enabled" : "Disabled"]")) //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
+
+/datum/admins/proc/toggleantagoocwretches()
+	set category = "Server"
+	set desc = "Toggle whether wretches can use AntagOOC"
+	set name = "Toggle AntagOOC Wretches"
+	GLOB.antagooc_wretches = !GLOB.antagooc_wretches
+	for(var/client/C in GLOB.clients)
+		if(C.mob?.mind?.has_antag_datum(/datum/antagonist/wretch))
+			to_chat(C, "<B>Wretches can [GLOB.antagooc_wretches ? "now" : "no longer"] use AntagOOC.</B>")
+	log_admin("[key_name(usr)] toggled AntagOOC for wretches.")
+	message_admins("[key_name_admin(usr)] toggled AntagOOC for wretches [GLOB.antagooc_wretches ? "on" : "off"].")
+	SSblackbox.record_feedback("nested tally", "admin_toggle", 1, list("Toggle AntagOOC Wretches", "[GLOB.antagooc_wretches ? "Enabled" : "Disabled"]")) //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 
 /datum/admins/proc/startnow()
 	set category = "Server"
@@ -701,7 +738,7 @@
 	else
 		for(var/i in 1 to amount)
 			var/atom/A = new chosen(T)
-			A.flags_1 |= ADMIN_SPAWNED_1
+			A.flags_1 |= ADMIN_SPAWNED_1 | ANTAGOOC_ACCESS_1
 
 	log_admin("[key_name(usr)] spawned [amount] x [chosen] at [AREACOORD(usr)]")
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Spawn Atom") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
@@ -724,7 +761,7 @@
 	else
 		var/obj/structure/closet/supplypod/centcompod/pod = new()
 		var/atom/A = new chosen(pod)
-		A.flags_1 |= ADMIN_SPAWNED_1
+		A.flags_1 |= ADMIN_SPAWNED_1 | ANTAGOOC_ACCESS_1
 		new /obj/effect/DPtarget(T, pod)
 
 	log_admin("[key_name(usr)] pod-spawned [chosen] at [AREACOORD(usr)]")

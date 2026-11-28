@@ -233,6 +233,15 @@
 		prefs.save_preferences()
 	to_chat(src, "You will [prefs.combat_toggles & CMODE_STRIPPING ? "" : "not"] be able to open the strip menu in combat mode.")
 
+/client/verb/cmode_erp()
+	set name = "Combat Mode ERP"
+	set category = "Preferences.Options"
+	set desc = ""
+	if(prefs)
+		prefs.combat_toggles ^= CMODE_ERP_BLOCK
+		prefs.save_preferences()
+	to_chat(src, "You will[prefs.combat_toggles & CMODE_ERP_BLOCK ? " not" : ""] be able to open the ERP panel in combat mode.")
+
 /client/verb/antighost()
 	set name = "Toggle Antighost"
 	set category = "Preferences.Options"
@@ -399,6 +408,7 @@
 	prefs.chat_toggles ^= CHAT_GHOSTEARS
 	prefs.chat_toggles ^= CHAT_GHOSTWHISPER
 	prefs.save_preferences()
+	log_admin("[key_name(src)] turned HearAllAsAdmin [(prefs.chat_toggles & CHAT_GHOSTEARS) ? "on" : "off"].")
 	if(prefs.chat_toggles & CHAT_GHOSTEARS)
 		to_chat(src, span_notice("I will hear all now."))
 	else
@@ -413,6 +423,7 @@
 		return
 	prefs.admin_chat_toggles ^= CHAT_ADMINLOOC
 	prefs.save_preferences()
+	log_admin("[key_name(src)] turned global LOOC hearing [(prefs.admin_chat_toggles & CHAT_ADMINLOOC) ? "on" : "off"].")
 	if(prefs.admin_chat_toggles & CHAT_ADMINLOOC)
 		to_chat(src, span_notice("I will now hear all LOOC chatter."))
 	else
@@ -427,6 +438,7 @@
 		return
 	prefs.admin_chat_toggles ^= CHAT_ADMIN_SLOOC
 	prefs.save_preferences()
+	log_admin("[key_name(src)] turned subtle LOOC hearing [(prefs.admin_chat_toggles & CHAT_ADMIN_SLOOC) ? "on" : "off"].")
 	if(prefs.admin_chat_toggles & CHAT_ADMIN_SLOOC)
 		to_chat(src, span_notice("I will now hear subtle LOOC (SLOOC) chatter I am not part of."))
 	else

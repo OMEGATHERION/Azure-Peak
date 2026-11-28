@@ -114,6 +114,9 @@ GLOBAL_VAR_CONST(observer_move_delay_multiplier, 0.5)
 /mob/dead/observer/eye/horde_respawn()
 	return
 
+/mob/dead/observer/eye/should_hear_dsay()
+	return FALSE
+
 /mob/dead/observer/eye/Move(NewLoc, direct)
 	if(updatedir)
 		setDir(direct)
@@ -141,7 +144,41 @@ GLOBAL_VAR_CONST(observer_move_delay_multiplier, 0.5)
 /mob/dead/observer/eye/screye/Move(n, direct)
 	return
 
+GLOBAL_LIST_EMPTY(displaced_souls)
 
+/mob/dead/observer/eye/screye/displaced_soul
+	var/mob/living/carbon/human/vessel			// the vessel mob we came from
+	var/datum/mind/vessel_orig_mind				// original mind datum of the vessel. this is DIFFERENT from the mind datum of the ghost
+	var/mob/living/carbon/human/possessor		// original body of the player possessing us
+	var/datum/hag_identity/original_identity	// we use this to store voice color and descriptor, nothing more
+	var/datum/devotion/vessel_devotion			// storing this, because the possessor can have devotion and in that case we transfer it over
+	var/datum/patron/vessel_patron				// ditto
+	var/datum/skill_holder/archived_skills		// why are minds like this
+	var/vessel_skills							// tells us whose skills these actually are
+
+/mob/dead/observer/eye/screye/displaced_soul/Initialize(mapload)
+	. = ..()
+	GLOB.displaced_souls += src
+
+/mob/dead/observer/eye/screye/displaced_soul/Destroy()
+	GLOB.displaced_souls -= src
+	. = ..()
+
+/mob/dead/observer/eye/screye/displaced_soul/say_verb(message as text)
+	set name = "Say"
+	set hidden = 1
+
+	if(!length(message))
+		return
+	if(GLOB.say_disabled)	//This is here to try to identify lag problems
+		to_chat(usr, "<span class='danger'>Speech is currently admin-disabled.</span>")
+		return
+	clear_typing_indicator()		// clear it immediately!
+
+	if(vessel && original_identity)
+		var/raw_msg = copytext(sanitize(message), 1, MAX_MESSAGE_LEN)
+		log_talk(raw_msg, LOG_SAY, tag="displaced soul (to [vessel])")
+		to_chat(list(src, vessel), span_deadsay("[original_identity.name] whispers, \"[autopunct_bare(raw_msg)]\""))
 
 /mob/dead/observer/Initialize(mapload)
 	GLOB.observer_list += src
@@ -271,6 +308,7 @@ Works together with spawning an observer, noted above.
 		SSdroning.kill_loop(client)
 		SSdroning.kill_droning(client)
 	var/mob/dead/observer/ghost = new ghostpath(src)
+	ghost.flags_1 |= flags_1 & ANTAGOOC_ACCESS_1
 	ghost.ghostize_time = world.time
 	SStgui.on_transfer(src, ghost)
 	ghost.can_reenter_corpse = reenter
@@ -535,6 +573,8 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 
 	if(is_hidden_from_ghosts(target, src))
 		return
+	if(has_ghost_protection(target))
+		log_admin_view(target, "was orbited through anti-ghost")
 
 	var/icon/I = icon(target.icon,target.icon_state,target.dir)
 
@@ -797,29 +837,23 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 /mob/dead/observer/verb/observe()
 	set name = "Observe"
 	set hidden = 1
-	if(!check_rights(R_WATCH))
+	if(!check_rights(R_ADMIN))
 		return
-	var/list/creatures = getpois()
+	show_orbit_menu(TRUE)
 
+/mob/dead/observer/proc/observe_mob(mob/target)
+	if(!client || !istype(target) || target == src)
+		return FALSE
 	reset_perspective(null)
-
-	var/eye_name = null
-
-	eye_name = input(usr, "Please, select a player!", "Observe", null) as null|anything in creatures
-
-	if (!eye_name)
-		return
-
-	var/mob/mob_eye = creatures[eye_name]
-	//Istype so we filter out points of interest that are not mobs
-	if(client && mob_eye && istype(mob_eye))
-		client.eye = mob_eye
-		if(mob_eye.hud_used)
-			client.screen = list()
-			LAZYINITLIST(mob_eye.observers)
-			mob_eye.observers |= src
-			mob_eye.hud_used.show_hud(mob_eye.hud_used.hud_version, src)
-			observetarget = mob_eye
+	client.eye = target
+	if(target.hud_used)
+		client.screen = list()
+		LAZYINITLIST(target.observers)
+		target.observers |= src
+		target.hud_used.show_hud(target.hud_used.hud_version, src)
+		observetarget = target
+	log_admin("[key_name(src)] started observing [key_name(target)][has_ghost_protection(target) ? ", who has anti-ghost on" : ""].")
+	return TRUE
 
 /mob/dead/observer/CtrlShiftClick(mob/user)
 	if(isobserver(user) && check_rights(R_SPAWN))
@@ -865,9 +899,12 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 	set desc = ""
 	set category = "Ghost"
 	set hidden = 1
+	show_orbit_menu(FALSE)
+
+/mob/dead/observer/proc/show_orbit_menu(observe_clicks)
 	if(!orbit_menu)
 		orbit_menu = new(src)
-
+	orbit_menu.observe_clicks = observe_clicks
 	orbit_menu.ui_interact(src)
 
 /mob/dead/observer/proc/tray_view()
@@ -906,6 +943,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 	var/cached_orbit_data_user_ref
 	var/cached_orbit_data_time = 0
 	var/orbit_cache_ttl_ds = 10
+	var/observe_clicks = FALSE
 
 /datum/orbit_menu/New(mob/dead/observer/new_owner)
 	if(!istype(new_owner))
@@ -934,6 +972,11 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 /datum/orbit_menu/ui_data(mob/user)
 	var/list/data = list()
 	data["orbiting_ref"] = owner?.orbiting_ref
+	var/can_observe = !!check_rights_for(user?.client, R_ADMIN)
+	data["can_observe"] = can_observe
+	data["observe_clicks"] = can_observe && observe_clicks
+	var/mob/eye = owner?.client?.eye
+	data["observing_ref"] = (can_observe && ismob(eye) && eye != owner) ? REF(eye) : null
 	return data
 
 /datum/orbit_menu/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
@@ -963,6 +1006,29 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 				return TRUE
 
 			owner.ManualFollow(target)
+			SStgui.update_uis(src)
+			return TRUE
+
+		if("observe")
+			if(!check_rights_for(ui.user.client, R_ADMIN))
+				return TRUE
+			var/mob/target = locate(params["ref"])
+			if(!istype(target) || QDELETED(target) || isnewplayer(target))
+				to_chat(ui.user, span_notice("That target is no longer available."))
+				return TRUE
+			owner.observe_mob(target)
+			SStgui.update_uis(src)
+			return TRUE
+
+		if("stop_observing")
+			owner.reset_perspective(null)
+			SStgui.update_uis(src)
+			return TRUE
+
+		if("toggle_observe_clicks")
+			if(!check_rights_for(ui.user.client, R_ADMIN))
+				return TRUE
+			observe_clicks = !observe_clicks
 			SStgui.update_uis(src)
 			return TRUE
 
@@ -1000,9 +1066,14 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 		"ghosts" = list(),
 	)
 
+	var/can_observe = !!check_rights_for(user?.client, R_ADMIN)
+	if(can_observe)
+		data["npcs"] = list()
+
 	var/list/namecounts_alive = list()
 	var/list/namecounts_dead = list()
 	var/list/namecounts_ghosts = list()
+	var/list/namecounts_npcs = list()
 	var/list/role_color_cache = list()
 
 	for(var/mob/M in sortmobs())
@@ -1023,10 +1094,9 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 			append_serialized_target(data["dead"], M, namecounts_dead, role_color_cache)
 			continue
 
-		if(istype(M, /mob/living/carbon/human/species/npc/deadite))
-			continue
-
-		if(!M.mind && !M.ckey)
+		if(istype(M, /mob/living/carbon/human/species/npc/deadite) || (!M.mind && !M.ckey))
+			if(can_observe && isliving(M))
+				append_npc_target(data["npcs"], M, namecounts_npcs, role_color_cache)
 			continue
 
 		append_serialized_target(data["alive"], M, namecounts_alive, role_color_cache)
@@ -1042,6 +1112,21 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 		return
 
 	bucket += list(entry)
+
+/datum/orbit_menu/proc/append_npc_target(list/bucket, mob/living/L, list/namecounts, list/role_color_cache)
+	var/list/entry = serialize_atom(L, namecounts, role_color_cache)
+	if(!entry)
+		return
+	if(!entry["role"])
+		entry["role"] = get_npc_group(L)
+	bucket += list(entry)
+
+/datum/orbit_menu/proc/get_npc_group(mob/living/L)
+	if(ishuman(L))
+		return "Humanoids"
+	if(isanimal(L))
+		return "Creatures"
+	return "Other"
 
 /datum/orbit_menu/proc/get_role_selection_color(assigned_role, list/role_color_cache, datum/job/J = null)
 	if(!assigned_role)

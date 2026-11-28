@@ -1,7 +1,6 @@
 ///////////////////
 // UNIVERSAL	 //
 ///////////////////
-
 /obj/item/herbseed/rosa/azure
 	name = "azurosa seeds"
 	seed_identity = "azurosa seeds"
@@ -24,7 +23,6 @@
 	one thing: a donation from the inner lands."
 	icon_state = "azurosa_plant"
 	icon = 'icons/obj/items/donor_objects.dmi'
-
 	herbtype = /obj/item/alch/rosa/azure
 
 /obj/item/alch/rosa/azure
@@ -966,7 +964,7 @@
 	custom_design = TRUE
 	body_parts_covered = CHEST
 	slot_flags = ITEM_SLOT_HEAD | ITEM_SLOT_CLOAK
-	storage = FALSE
+	storage = null
 	grid_width = 32
 	grid_height = 32
 
@@ -1775,7 +1773,8 @@
 	detail_color = CLOTHING_WHITE
 
 /obj/item/rogueweapon/woodstaff/implement/fellowshippe
-	name = "Experimental Azurian Fellowshippe Staff"
+	name = "\improper Experimental Azurian Fellowshippe Staff"
+	base_implement_name = "\improper Experimental Azurian Fellowshippe Staff"
 	desc = "A sleek, purpose driven staff with a blacksteel shaft running the entirety of it's lenght. \
 	Using a special crystalization technique and a gating system, a thin feeder duct exists in \
 	the middle of the shaft allowing a alchemically synthetsized dorpel to run the full lenght,  \
@@ -1785,7 +1784,8 @@
 	icon = 'icons/obj/items/donor_weapons_64.dmi'
 
 /obj/item/rogueweapon/woodstaff/implement/greater/fellowshippe
-	name = "Experimental Azurian Fellowshippe Staff"
+	name = "\improper Experimental Azurian Fellowshippe Staff"
+	base_implement_name = "\improper Experimental Azurian Fellowshippe Staff"
 	desc = "A sleek, purpose driven staff with a blacksteel shaft running the entirety of it's lenght. \
 	Using a special crystalization technique and a gating system, a thin feeder duct exists in \
 	the middle of the shaft allowing a alchemically synthetsized dorpel to run the full lenght,  \
@@ -1795,7 +1795,8 @@
 	icon = 'icons/obj/items/donor_weapons_64.dmi'
 
 /obj/item/rogueweapon/woodstaff/implement/grand/fellowshippe
-	name = "Experimental Azurian Fellowshippe Staff"
+	name = "\improper Experimental Azurian Fellowshippe Staff"
+	base_implement_name = "\improper Experimental Azurian Fellowshippe Staff"
 	desc = "A sleek, purpose driven staff with a blacksteel shaft running the entirety of it's lenght. \
 	Using a special crystalization technique and a gating system, a thin feeder duct exists in \
 	the middle of the shaft allowing a alchemically synthetsized dorpel to run the full lenght,  \
@@ -1805,7 +1806,8 @@
 	icon = 'icons/obj/items/donor_weapons_64.dmi'
 
 /obj/item/rogueweapon/woodstaff/implement/grand/magos/fellowshippe
-	name = "Experimental Azurian Fellowshippe Staff"
+	name = "\improper Experimental Azurian Fellowshippe Staff"
+	base_implement_name = "\improper Experimental Azurian Fellowshippe Staff"
 	desc = "A sleek, purpose driven staff with a blacksteel shaft running the entirety of it's lenght. \
 	Using a special crystalization technique and a gating system, a thin feeder duct exists in \
 	the middle of the shaft allowing a alchemically synthetsized dorpel to run the full lenght,  \
@@ -2216,6 +2218,14 @@
 	icon_state = "ryan_maimedhelm"
 	icon = 'icons/clothing/donor_clothes.dmi'
 	mob_overlay_icon = 'icons/clothing/onmob/donor_clothes64.dmi'
+
+/obj/item/clothing/mask/rogue/facemask/steel/kazengun/full/ryan
+	name = "snouted ogre mask"
+	desc = "\"Fortune is an ugly, two-faced goddess.\""
+	icon = 'icons/clothing/donor_clothes.dmi'
+	mob_overlay_icon = 'icons/clothing/onmob/donor_clothes.dmi'
+	icon_state = "ryan_ogremask"
+	item_state = "ryan_ogremask"
 
 /obj/item/rogueweapon/example/ryan_naginata
 	name = "+5 common profane naginata"
@@ -5147,6 +5157,8 @@ As Excaliber."
 	desc = "It doesn’t seem to serve it’s purpose well anymore, Aeon’s grip slowly fraying it’s structure. The inside of it is filled with scripture in an older, defunct Otavais tongue. Sometimes, it wheezes on its own, lending credence to the whispers of heresy surrounding its invention. Wearing it, you taste copper whenever you draw breath."
 	armor = null
 	smeltresult = null
+	block2add = null
+	body_parts_covered = null
 
 /obj/item/clothing/mask/rogue/facemask/steel/confessor/mrsaxyman/ComponentInitialize()
 	return
@@ -5173,3 +5185,80 @@ As Excaliber."
 	icon = 'icons/clothing/donor_clothes.dmi'
 	mob_overlay_icon = 'icons/clothing/onmob/donor_clothes.dmi'
 	icon_state = "bluelily"
+
+/obj/item/clothing/head/roguetown/circlet/sigholt_coronet
+	name = "blacksteel coronet"
+	desc = "A blacksteel coronet inlaid with holy sylver. A mark of office, or ostentation?"
+	icon_state = "sigholtcoronet_0"
+	item_state = "sigholtcoronet_0"
+	icon = 'icons/clothing/donor_clothes.dmi'
+	mob_overlay_icon = 'icons/clothing/onmob/donor_clothes.dmi'
+	unique_reskin = list(
+		"blacksteel" = "sigholtcoronet_0",
+		"gold" = "sigholtcoronet_1",
+		"silver" = "sigholtcoronet_2",
+	)
+	current_skin = "blacksteel"
+
+/obj/item/clothing/head/roguetown/circlet/sigholt_coronet/rmb_self(mob/user, keybind = FALSE)
+	. = ..()
+	if(unique_reskin && user.canUseTopic(src, BE_CLOSE, NO_DEXTERITY))
+		reskin_obj(user)
+
+/obj/item/clothing/head/roguetown/circlet/sigholt_coronet/reskin_obj(mob/M)
+	if(!unique_reskin || !length(unique_reskin))
+		return
+
+	var/list/keys = unique_reskin
+	var/idx = keys.Find(current_skin)
+	idx = idx ? (idx % length(keys)) + 1 : 1
+	var/choice = keys[idx]
+
+	current_skin = choice
+	icon_state = unique_reskin[choice]
+	item_state = icon_state
+
+	var/metal_name = choice
+	to_chat(M, span_info("You adjust the [src]."))
+	name = "[metal_name] coronet"
+	desc = "A [metal_name] coronet inlaid with holy sylver. A mark of office, or ostentation?"
+
+	if(ishuman(M))
+		var/mob/living/carbon/human/H = M
+		H.update_inv_head()
+		H.update_inv_hands()
+
+/obj/item/clothing/head/roguetown/circlet/sigholt_coronet/get_mechanics_examine(mob/user)
+	. = ..()
+	. += span_info("Right-clicking in hand allows you to select the coronet's metal between blacksteel, gold, and silver.")
+
+/obj/item/clothing/head/roguetown/circlet/sigholt_coronet/equipped(mob/user, slot, initial = FALSE)
+	. = ..()
+	if(current_skin && unique_reskin && unique_reskin[current_skin])
+		icon_state = unique_reskin[current_skin]
+		item_state = icon_state
+	if(ishuman(user))
+		var/mob/living/carbon/human/H = user
+		H.update_inv_head()
+		H.update_inv_hands()
+
+/obj/item/clothing/head/roguetown/circlet/sigholt_coronet/update_icon()
+	if(current_skin && unique_reskin && unique_reskin[current_skin])
+		icon_state = unique_reskin[current_skin]
+		item_state = icon_state
+	return ..()
+
+// ClemTheDuck
+/obj/item/clothing/mask/rogue/lunarmuzzle
+	name = "ceremonial lunar muzzle"
+	desc = "A ceremonial mask often used by Noccite cultists, forged of blessed steel alloy with a blue hue. Shaped like a Lupian muzzle to cover the mouth, these masks remind their wearers to listen more than they speak."
+	icon = 'icons/clothing/donor_clothes.dmi'
+	mob_overlay_icon = 'icons/clothing/onmob/donor_clothes.dmi'
+	icon_state = "lunarmuzzle"
+	item_state = "lunarmuzzle"
+	resistance_flags = FIRE_PROOF
+	flags_inv = HIDEFACE|HIDESNOUT
+	body_parts_covered = FACE
+	block2add = FOV_DEFAULT
+	slot_flags = ITEM_SLOT_MASK|ITEM_SLOT_HEAD|ITEM_SLOT_MOUTH
+	experimental_onhip = TRUE

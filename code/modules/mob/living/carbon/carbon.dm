@@ -1,11 +1,30 @@
 /mob/living/carbon/Initialize(mapload)
 	..()
 
+	RegisterSignal(src, list(SIGNAL_ADDTRAIT(TRAIT_REGROW_LIMBS), SIGNAL_REMOVETRAIT(TRAIT_REGROW_LIMBS)), PROC_REF(update_regrow_limb_action))
+	update_regrow_limb_action()
+
 	recalculate_pain_threshold()
 
 	create_reagents(1000)
 	update_body_parts() //to update the carbon's new bodyparts appearance
 	GLOB.carbon_list += src
+
+/mob/living/carbon/proc/update_regrow_limb_action(datum/source, trait)
+	SIGNAL_HANDLER
+	var/datum/action/cooldown/regrow_limb/regrow_action
+	for(var/datum/action/cooldown/regrow_limb/existing_action in actions)
+		regrow_action = existing_action
+		break
+
+	if(HAS_TRAIT(src, TRAIT_REGROW_LIMBS))
+		if(!regrow_action)
+			regrow_action = new(src)
+			regrow_action.Grant(src)
+		return
+
+	if(regrow_action)
+		qdel(regrow_action)
 
 /mob/living/carbon/proc/recalculate_pain_threshold()
 	pain_threshold = STAWIL * 10
@@ -572,7 +591,9 @@
 			I.safe_throw_at(target,I.throw_range,I.throw_speed,src, force = move_force)
 
 /mob/living/carbon/proc/get_str_arms(num)
-	if(!domhand || !num || HAS_TRAIT(src, TRAIT_DUALWIELDER))
+	if(!domhand || !num || HAS_TRAIT(src, TRAIT_AMBIDEXTROUS))
+		return STASTR
+	if(HAS_TRAIT(src, TRAIT_DUALWIELDER))
 		return STASTR
 	var/used = STASTR
 	if(num == domhand)
@@ -1283,6 +1304,8 @@
 							to_chat(usr, "<span class='boldwarning'>[src] doesn't have such bodypart.</span>")
 					else
 						to_chat(usr, "<span class='boldwarning'>Only humans can be augmented.</span>")
+			message_admins(span_danger("[key_name_admin(usr)] used [edit_action] on the [result] bodypart of [key_name_admin(src)]."))
+			log_message("had their [result] bodypart modified ([edit_action]) by [key_name(usr)]", LOG_ADMIN)
 		admin_ticket_log("[key_name_admin(usr)] has modified the bodyparts of [src]")
 	if(href_list[VV_HK_MODIFY_ORGANS])
 		if(!check_rights(NONE))
@@ -1341,6 +1364,8 @@
 			to_chat(usr, "Mob doesn't exist anymore")
 			return
 		if(result)
+			message_admins(span_danger("[key_name_admin(usr)] sent the hallucination [result] to [key_name_admin(src)]."))
+			log_message("was sent the hallucination [result] by [key_name(usr)]", LOG_ADMIN)
 			new result(src, TRUE)
 
 /mob/living/carbon/can_resist()
